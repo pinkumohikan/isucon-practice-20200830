@@ -456,12 +456,6 @@ func getMessage(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func queryChannels() ([]int64, error) {
-	res := []int64{}
-	err := db.Select(&res, "SELECT id FROM channel")
-	return res, err
-}
-
 func queryHaveRead(userID, chID int64) (int64, error) {
 	type HaveRead struct {
 		UserID    int64     `db:"user_id"`
@@ -491,34 +485,41 @@ func fetchUnread(c echo.Context) error {
 
 	time.Sleep(time.Second)
 
-	channels, err := queryChannels()
-	if err != nil {
+	type ChannelAndMessage struct {
+		ChannelId int64 `db:"channel_id"`
+		MessageCount int64 `db:"message_count"`
+	}
+	var cms []ChannelAndMessage
+	q := `
+		SELECT
+			c.id as channel_id,
+		FROM
+			channel as c
+			inner join message as m on m.channel_id = c.id
+	`
+	if err := db.Select(&cms, q); err != nil {
 		return err
 	}
 
 	resp := []map[string]interface{}{}
 
-	for _, chID := range channels {
-		lastID, err := queryHaveRead(userID, chID)
+	for _, cm := range cms {
+		lastID, err := queryHaveRead(userID, cm.ChannelId)
 		if err != nil {
 			return err
 		}
 
-		var cnt int64
+		cnt := cm.MessageCount
 		if lastID > 0 {
 			err = db.Get(&cnt,
 				"SELECT COUNT(*) as cnt FROM message WHERE channel_id = ? AND ? < id",
-				chID, lastID)
-		} else {
-			err = db.Get(&cnt,
-				"SELECT COUNT(*) as cnt FROM message WHERE channel_id = ?",
-				chID)
+				cm.ChannelId, lastID)
 		}
 		if err != nil {
 			return err
 		}
 		r := map[string]interface{}{
-			"channel_id": chID,
+			"channel_id": cm.ChannelId,
 			"unread":     cnt}
 		resp = append(resp, r)
 	}
