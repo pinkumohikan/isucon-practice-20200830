@@ -415,7 +415,7 @@ func getMessage(c echo.Context) error {
 	}
 
 	users := []User{}
-	sql := "SELECT name, display_name, avatar_icon FROM user WHERE id in (?)"
+	sql := "SELECT * FROM user WHERE id in (?)"
 	sql, params, err := sqlx.In(sql, uids)
 	if err != nil {
 		log.Fatal(err)
