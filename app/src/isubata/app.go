@@ -710,8 +710,6 @@ func postProfile(c echo.Context) error {
 }
 
 func getIcon(c echo.Context) error {
-	log.Println("ぴええええええええええええええええええええええええん")
-
 	var name string
 	var data []byte
 	err := db.QueryRow("SELECT name, data FROM image WHERE name = ?",
