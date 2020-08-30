@@ -96,7 +96,7 @@ func init() {
 			panic(err)
 		}
 
-		f, err := os.Create("../../public/icons/"+name)
+		f, err := os.Create("./public/icons/"+name)
 		if err != nil {
 			panic(err)
 		}
@@ -684,7 +684,7 @@ func postProfile(c echo.Context) error {
 		avatarName = fmt.Sprintf("%x%s", sha1.Sum(avatarData), ext)
 	}
 
-	f, err := os.Create("../../public/icons/"+avatarName)
+	f, err := os.Create("./public/icons/"+avatarName)
 	if err != nil {
 		return err
 	}
