@@ -419,11 +419,11 @@ func getMessage(c echo.Context) error {
 		sql := "SELECT * FROM user WHERE id in (?)"
 		sql, params, err := sqlx.In(sql, uids)
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
 
 		if err := sqlx.Select(db, &users, sql, params...); err != nil {
-			log.Fatal(err)
+			return err
 		}
 	}
 
