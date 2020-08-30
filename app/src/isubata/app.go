@@ -495,11 +495,11 @@ func fetchUnread(c echo.Context) error {
 		SELECT
 			c.id as channel_id,
 			count(m.id) as message_count,
-			h.message_id as last_id
+			IFNULL(h.message_id,0) as last_id
 		FROM
 			channel as c
 			inner join message as m on m.channel_id = c.id
-			inner join haveread as h on c.id = h.channel_id
+			left join haveread as h on c.id = h.channel_id
 		WHERE h.user_id = ?
 		GROUP BY channel_id
 	`
@@ -512,7 +512,7 @@ func fetchUnread(c echo.Context) error {
 	for _, cm := range cms {
 		lid := cm.lastId
 		cnt := cm.MessageCount
-		if lid > nil {
+		if lid > 0 {
 			err = db.Get(&cnt,
 				"SELECT COUNT(*) as cnt FROM message WHERE channel_id = ? AND ? < id",
 				cm.ChannelId, lid)
