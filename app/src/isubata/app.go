@@ -493,9 +493,11 @@ func fetchUnread(c echo.Context) error {
 	q := `
 		SELECT
 			c.id as channel_id,
+			count(m.id) as message_count
 		FROM
 			channel as c
 			inner join message as m on m.channel_id = c.id
+		GROUP BY channel_id
 	`
 	if err := db.Select(&cms, q); err != nil {
 		return err
