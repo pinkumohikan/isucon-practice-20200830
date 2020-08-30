@@ -488,7 +488,7 @@ func fetchUnread(c echo.Context) error {
 	type ChannelAndMessage struct {
 		ChannelId    int64 `db:"channel_id"`
 		MessageCount int64 `db:"message_count"`
-		lastId       int64 `db:"last_id"`
+		LastId       int64 `db:"last_id"`
 	}
 	var cms []ChannelAndMessage
 	q := `
@@ -511,10 +511,10 @@ func fetchUnread(c echo.Context) error {
 
 	for _, cm := range cms {
 		cnt := cm.MessageCount
-		if cm.lastId > 0 {
+		if cm.LastId > 0 {
 			err = db.Get(&cnt,
 				"SELECT COUNT(*) as cnt FROM message WHERE channel_id = ? AND ? < id",
-				cm.ChannelId, cm.lastId)
+				cm.ChannelId, cm.LastId)
 		}
 		if err != nil {
 			return err
