@@ -486,7 +486,7 @@ func fetchUnread(c echo.Context) error {
 	time.Sleep(time.Second)
 
 	type ChannelAndMessage struct {
-		ChannelId int64 `db:"channel_id"`
+		ChannelId    int64 `db:"channel_id"`
 		MessageCount int64 `db:"message_count"`
 	}
 	var cms []ChannelAndMessage
