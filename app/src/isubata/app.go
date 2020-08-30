@@ -426,7 +426,8 @@ func getMessage(c echo.Context) error {
 	}
 
 	response := make([]map[string]interface{}, 0)
-	for _, m := range messages {
+	for i := len(messages) - 1; i >= 0; i-- {
+		m := messages[i]
 		r := make(map[string]interface{})
 		for _, u := range users {
 			if u.ID == m.UserID {
