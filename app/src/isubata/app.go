@@ -96,7 +96,7 @@ func init() {
 			panic(err)
 		}
 
-		f, err := os.Create("./public/icons/"+name)
+		f, err := os.Create("./public/icons/" + name)
 		if err != nil {
 			panic(err)
 		}
@@ -409,13 +409,37 @@ func getMessage(c echo.Context) error {
 		return err
 	}
 
-	response := make([]map[string]interface{}, 0)
-	for i := len(messages) - 1; i >= 0; i-- {
-		m := messages[i]
-		r, err := jsonifyMessage(m)
+	var uids []int64
+	for _, m := range messages {
+		uids = append(uids, m.UserID)
+	}
+
+	users := []User{}
+	if len(uids) != 0 {
+		q := "SELECT * FROM user WHERE id in (?)"
+		q, params, err := sqlx.In(q, uids)
 		if err != nil {
 			return err
 		}
+
+		if err := sqlx.Select(db, &users, q, params...); err != nil {
+			return err
+		}
+	}
+
+	response := make([]map[string]interface{}, 0)
+	for i := len(messages) - 1; i >= 0; i-- {
+		m := messages[i]
+		r := make(map[string]interface{})
+		for _, u := range users {
+			if u.ID == m.UserID {
+				r["user"] = u
+				break
+			}
+		}
+		r["id"] = m.ID
+		r["date"] = m.CreatedAt.Format("2006/01/02 15:04:05")
+		r["content"] = m.Content
 		response = append(response, r)
 	}
 
@@ -684,7 +708,7 @@ func postProfile(c echo.Context) error {
 		avatarName = fmt.Sprintf("%x%s", sha1.Sum(avatarData), ext)
 	}
 
-	f, err := os.Create("./public/icons/"+avatarName)
+	f, err := os.Create("./public/icons/" + avatarName)
 	if err != nil {
 		return err
 	}
