@@ -501,7 +501,7 @@ func fetchUnread(c echo.Context) error {
 		return err
 	}
 
-	resp := []map[string]interface{}{}
+	var resp []map[string]interface{}
 
 	for _, cm := range cms {
 		lastID, err := queryHaveRead(userID, cm.ChannelId)
