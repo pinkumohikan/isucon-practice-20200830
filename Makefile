@@ -23,6 +23,7 @@ kataribe:
 
 bench:
 	cd ~/isubata/bench && ./bin/bench -remotes=127.0.0.1 -output result.json
+	cat ~/isubata/bench/result.json | jq '{pass: .pass, score: .score}'
 
 truncate-logs:
 	sudo truncate --size 0 /var/log/nginx/access.log
