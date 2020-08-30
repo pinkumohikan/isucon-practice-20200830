@@ -52,7 +52,7 @@ duration_index = 10
 # For overview of regexp syntax: https://golang.org/pkg/regexp/syntax/
 [[bundle]]
 regexp = '^GET /icons/[0-9a-z]+\.(png|jpg)'
-name = "get icons/*.(png|jpg)"
+name = "get /icons/*.(png|jpg)"
 
 [[bundle]]
 regexp = '^GET /history/[0-9]+'
