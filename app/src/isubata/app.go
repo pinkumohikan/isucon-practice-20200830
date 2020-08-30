@@ -421,7 +421,7 @@ func getMessage(c echo.Context) error {
 		log.Fatal(err)
 	}
 
-	if err := sqlx.Select(dbConn, &users, sql, params...); err != nil {
+	if err := sqlx.Select(db, &users, sql, params...); err != nil {
 		log.Fatal(err)
 	}
 
