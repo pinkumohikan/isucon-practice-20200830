@@ -78,7 +78,8 @@ func init() {
 		time.Sleep(time.Second * 3)
 	}
 
-	db.SetMaxOpenConns(20)
+	db.SetMaxOpenConns(50)
+	db.SetMaxIdleConns(50)
 	db.SetConnMaxLifetime(5 * time.Minute)
 	log.Printf("Succeeded to connect db.")
 
@@ -488,37 +489,36 @@ func fetchUnread(c echo.Context) error {
 	type ChannelAndMessage struct {
 		ChannelId    int64 `db:"channel_id"`
 		MessageCount int64 `db:"message_count"`
+		LastId       int64 `db:"last_id"`
 	}
 	var cms []ChannelAndMessage
 	q := `
 		SELECT
 			c.id as channel_id,
-			count(m.id) as message_count
+			count(m.id) as message_count,
+			IFNULL(h.message_id,0) as last_id
 		FROM
 			channel as c
 			inner join message as m on m.channel_id = c.id
+			left join haveread as h on c.id = h.channel_id
+		WHERE h.user_id = ?
 		GROUP BY channel_id
 	`
-	if err := db.Select(&cms, q); err != nil {
+	if err := db.Select(&cms, q, userID); err != nil {
 		return err
 	}
 
 	var resp []map[string]interface{}
 
 	for _, cm := range cms {
-		lastID, err := queryHaveRead(userID, cm.ChannelId)
-		if err != nil {
-			return err
-		}
-
 		cnt := cm.MessageCount
-		if lastID > 0 {
-			err = db.Get(&cnt,
+		if cm.LastId > 0 {
+			err := db.Get(&cnt,
 				"SELECT COUNT(*) as cnt FROM message WHERE channel_id = ? AND ? < id",
-				cm.ChannelId, lastID)
-		}
-		if err != nil {
-			return err
+				cm.ChannelId, cm.LastId)
+			if err != nil {
+				return err
+			}
 		}
 		r := map[string]interface{}{
 			"channel_id": cm.ChannelId,
