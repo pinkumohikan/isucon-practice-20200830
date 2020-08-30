@@ -488,15 +488,18 @@ func fetchUnread(c echo.Context) error {
 	type ChannelAndMessage struct {
 		ChannelId    int64 `db:"channel_id"`
 		MessageCount int64 `db:"message_count"`
+		lastId       int64 `db:"last_id"`
 	}
 	var cms []ChannelAndMessage
 	q := `
 		SELECT
 			c.id as channel_id,
-			count(m.id) as message_count
+			count(m.id) as message_count,
+			h.message_id as last_id
 		FROM
 			channel as c
 			inner join message as m on m.channel_id = c.id
+			inner join haveread as h on c.id = h.channel_id
 		GROUP BY channel_id
 	`
 	if err := db.Select(&cms, q); err != nil {
@@ -506,16 +509,12 @@ func fetchUnread(c echo.Context) error {
 	var resp []map[string]interface{}
 
 	for _, cm := range cms {
-		lastID, err := queryHaveRead(userID, cm.ChannelId)
-		if err != nil {
-			return err
-		}
-
+		lid := cm.lastId
 		cnt := cm.MessageCount
-		if lastID > 0 {
+		if lid > nil {
 			err = db.Get(&cnt,
 				"SELECT COUNT(*) as cnt FROM message WHERE channel_id = ? AND ? < id",
-				cm.ChannelId, lastID)
+				cm.ChannelId, lid)
 		}
 		if err != nil {
 			return err
