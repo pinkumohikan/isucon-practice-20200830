@@ -500,9 +500,10 @@ func fetchUnread(c echo.Context) error {
 			channel as c
 			inner join message as m on m.channel_id = c.id
 			inner join haveread as h on c.id = h.channel_id
+		WHERE h.user_id = ?
 		GROUP BY channel_id
 	`
-	if err := db.Select(&cms, q); err != nil {
+	if err := db.Select(&cms, q, userID); err != nil {
 		return err
 	}
 
