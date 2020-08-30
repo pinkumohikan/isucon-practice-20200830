@@ -512,12 +512,12 @@ func fetchUnread(c echo.Context) error {
 	for _, cm := range cms {
 		cnt := cm.MessageCount
 		if cm.LastId > 0 {
-			err = db.Get(&cnt,
+			err := db.Get(&cnt,
 				"SELECT COUNT(*) as cnt FROM message WHERE channel_id = ? AND ? < id",
 				cm.ChannelId, cm.LastId)
-		}
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
 		}
 		r := map[string]interface{}{
 			"channel_id": cm.ChannelId,
