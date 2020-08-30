@@ -81,6 +81,29 @@ func init() {
 	db.SetMaxOpenConns(20)
 	db.SetConnMaxLifetime(5 * time.Minute)
 	log.Printf("Succeeded to connect db.")
+
+	// Export images to public dir
+	rows, err := db.Queryx("select name, data from image")
+	if err != nil {
+		log.Println("failed to fetch all images")
+		panic(err)
+	}
+
+	for rows.Next() {
+		var name string
+		var data []byte
+		if err := rows.Scan(&name, &data); err != nil {
+			panic(err)
+		}
+
+		f, err := os.Create("../../public/icons/"+name)
+		if err != nil {
+			panic(err)
+		}
+		if _, err := f.Write(data); err != nil {
+			panic(err)
+		}
+	}
 }
 
 type User struct {
@@ -661,11 +684,15 @@ func postProfile(c echo.Context) error {
 		avatarName = fmt.Sprintf("%x%s", sha1.Sum(avatarData), ext)
 	}
 
+	f, err := os.Create("../../public/icons/"+avatarName)
+	if err != nil {
+		return err
+	}
+	if _, err := f.Write(avatarData); err != nil {
+		return err
+	}
+
 	if avatarName != "" && len(avatarData) > 0 {
-		_, err := db.Exec("INSERT INTO image (name, data) VALUES (?, ?)", avatarName, avatarData)
-		if err != nil {
-			return err
-		}
 		_, err = db.Exec("UPDATE user SET avatar_icon = ? WHERE id = ?", avatarName, self.ID)
 		if err != nil {
 			return err
@@ -683,6 +710,8 @@ func postProfile(c echo.Context) error {
 }
 
 func getIcon(c echo.Context) error {
+	log.Println("ぴええええええええええええええええええええええええん")
+
 	var name string
 	var data []byte
 	err := db.QueryRow("SELECT name, data FROM image WHERE name = ?",
