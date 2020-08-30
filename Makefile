@@ -1,6 +1,6 @@
 .PHONY: gogo kataribe
 
-gogo: stop-services build truncate-logs start-services ping
+gogo: stop-services build truncate-logs start-services ping bench
 
 build:
 	cd app && make build
@@ -20,6 +20,9 @@ ping:
 
 kataribe:
 	sudo cat /var/log/nginx/access.log | ./kataribe
+
+bench:
+	cd ~/isubata/bench && ./bin/bench -remotes=127.0.0.1 -output result.json
 
 truncate-logs:
 	sudo truncate --size 0 /var/log/nginx/access.log
