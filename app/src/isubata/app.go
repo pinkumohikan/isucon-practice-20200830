@@ -415,9 +415,14 @@ func getMessage(c echo.Context) error {
 	}
 
 	users := []User{}
-	err = db.Select(&users, "SELECT * FROM user WHERE id in (?)", uids)
+	sql := "SELECT * FROM user WHERE id in (?)"
+	sql, params, err := sqlx.In(sql, uids)
 	if err != nil {
-		return err
+		log.Fatal(err)
+	}
+
+	if err := sqlx.Select(dbConn, &users, sql, params...); err != nil {
+		log.Fatal(err)
 	}
 
 	response := make([]map[string]interface{}, 0)
