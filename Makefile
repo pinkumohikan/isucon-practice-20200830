@@ -14,7 +14,7 @@ start-services:
 	sudo systemctl start mysql
 	sudo systemctl start nginx
 	sudo systemctl start isubata.golang
-	sleep 3 # ミドルウェアとアプリケーションの起動を待つ
+	sleep 5 # ミドルウェアとアプリケーションの起動を待つ
 
 ping:
 	curl -sSL http://localhost > /dev/null
