@@ -409,13 +409,29 @@ func getMessage(c echo.Context) error {
 		return err
 	}
 
+	var uids []int
+	for _, m := range messages {
+		uids = append(uids, m.UserID)
+	}
+
+	users := []User{}
+	err := db.Select(&users, "SELECT * FROM user WHERE id in (?)", uids)
+	if err != nil {
+		return nil, err
+	}
+
 	response := make([]map[string]interface{}, 0)
-	for i := len(messages) - 1; i >= 0; i-- {
-		m := messages[i]
-		r, err := jsonifyMessage(m)
-		if err != nil {
-			return err
+	for _, m := range messages {
+		r := make(map[string]interface{})
+		for _, u := range users {
+			if u.id == m.UserID {
+				r["user"] = u
+				break
+			}
 		}
+		r["id"] = m.ID
+		r["date"] = m.CreatedAt.Format("2006/01/02 15:04:05")
+		r["content"] = m.Content
 		response = append(response, r)
 	}
 
