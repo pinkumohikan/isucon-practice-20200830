@@ -78,9 +78,9 @@ func init() {
 		time.Sleep(time.Second * 3)
 	}
 
-	db.DB.SetMaxOpenConns(50)
-	db.DB.SetConnMaxIdleTime(50)
-	db.DB.SetConnMaxLifetime(5 * time.Minute)
+	db.SetMaxOpenConns(50)
+	db.SetMaxIdleConns(50)
+	db.SetConnMaxLifetime(5 * time.Minute)
 	log.Printf("Succeeded to connect db.")
 
 	// Export images to public dir
