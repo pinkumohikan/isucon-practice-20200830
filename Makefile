@@ -1,6 +1,6 @@
-.PHONY: gogo
+.PHONY: gogo kataribe
 
-gogo: stop-services build truncate-logs start-services
+gogo: stop-services build truncate-logs start-services ping
 
 build:
 	cd app && make build
@@ -14,6 +14,12 @@ start-services:
 	sudo systemctl start mysql
 	sudo systemctl start nginx
 	sudo systemctl start isubata.golang
+
+ping:
+	curl -sSL http://localhost > /dev/null
+
+kataribe:
+	sudo cat /var/log/nginx/access.log | ./kataribe
 
 truncate-logs:
 	sudo truncate --size 0 /var/log/nginx/access.log
