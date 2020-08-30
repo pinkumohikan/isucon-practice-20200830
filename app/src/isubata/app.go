@@ -409,22 +409,22 @@ func getMessage(c echo.Context) error {
 		return err
 	}
 
-	var uids []int
+	var uids []int64
 	for _, m := range messages {
 		uids = append(uids, m.UserID)
 	}
 
 	users := []User{}
-	err := db.Select(&users, "SELECT * FROM user WHERE id in (?)", uids)
+	err = db.Select(&users, "SELECT * FROM user WHERE id in (?)", uids)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	response := make([]map[string]interface{}, 0)
 	for _, m := range messages {
 		r := make(map[string]interface{})
 		for _, u := range users {
-			if u.id == m.UserID {
+			if u.ID == m.UserID {
 				r["user"] = u
 				break
 			}
